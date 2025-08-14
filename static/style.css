@@ -1,0 +1,41 @@
+:root{
+  --bg1:#667eea; --bg2:#764ba2; --card:#ffffff14; --muted: #eaeef7c7;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  background: linear-gradient(135deg,var(--bg1),var(--bg2));
+  color:#fff; min-height:100vh; display:flex; align-items:flex-start; justify-content:center;
+  padding:28px;
+}
+.center-card{
+  width:100%; max-width:900px; background:var(--card); padding:22px; border-radius:14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25); backdrop-filter: blur(6px);
+}
+.title{font-size:1.5rem;margin:0 0 6px;text-align:center}
+.subtitle{opacity:.95;text-align:center;margin:0 0 18px;color:#eef}
+.form{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center}
+.input{padding:12px;border-radius:10px;border:0;min-width:200px}
+.input.small{max-width:240px}
+.btn{background:#ff9800;border-radius:10px;padding:12px 18px;border:0;color:#fff;font-weight:600;cursor:pointer}
+.recent{margin-top:18px}
+.recent-header{display:flex;justify-content:space-between;align-items:center}
+.link{background:none;border:0;color:#fff;cursor:pointer;text-decoration:underline;padding:0}
+.muted{color:rgba(255,255,255,0.8)}
+.recent-item{display:flex;gap:12px;padding:10px;border-radius:10px;align-items:center;background:rgba(255,255,255,0.04);margin-bottom:8px}
+.qr-thumb{height:44px;width:44px;object-fit:contain;border-radius:6px}
+.recent-body{flex:1;min-width:0}
+.short{font-weight:700;color:#fff;text-decoration:none}
+.muted.small{font-size:0.85rem;opacity:.85}
+.muted.tiny{font-size:0.78rem;opacity:.8}
+.recent-actions{display:flex;flex-direction:column;gap:6px}
+.action{background:rgba(0,0,0,0.2);border-radius:8px;padding:6px 8px;color:#fff;border:0;cursor:pointer;text-decoration:none}
+.table{width:100%;border-collapse:collapse}
+.table thead th{color:#fff;text-align:left;padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.table tbody td{padding:10px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.03)}
+.truncate{max-width:380px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card.small{background:rgba(255,255,255,0.06);padding:12px;border-radius:8px}
+@media (max-width:720px){
+  .form{flex-direction:column}
+  .recent-actions{flex-direction:row}
+}

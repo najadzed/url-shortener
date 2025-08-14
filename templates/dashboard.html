@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard • URL Shortener</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="center-card">
+    <h1 class="title">Dashboard</h1>
+
+    {% if not_found %}
+      <div class="card small">Short code "{{ code }}" not found.</div>
+    {% elif expired %}
+      <div class="card small">This link "{{ code }}" has expired.</div>
+    {% else %}
+      <table class="table">
+        <thead>
+          <tr><th>Short</th><th>Original</th><th>Clicks</th><th>Created</th><th>Expires</th></tr>
+        </thead>
+        <tbody>
+          {% for l in links %}
+            <tr id="{{ l.code }}">
+              <td><a href="/{{ l.code }}" target="_blank">{{ request.host_url }}{{ l.code }}</a></td>
+              <td class="truncate">{{ l.long_url }}</td>
+              <td>{{ l.clicks }}</td>
+              <td>{{ l.created_at[:10] }}</td>
+              <td>{{ l.expires_at[:10] if l.expires_at else 'Never' }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+
+    <div style="margin-top:18px;"><a href="/" class="link">← Back</a></div>
+  </main>
+</body>
+</html>

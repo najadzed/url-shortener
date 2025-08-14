@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>URL Shortener</title>
+  <style>
+    :root {
+      --bg1:#667eea; --bg2:#764ba2;
+      --card-bg: rgba(255,255,255,0.12);
+      --pill-bg: rgba(255,255,255,0.2);
+      --text:#ffffff;
+      --btn:#ff9800; --btn-hover:#e68a00;
+      --copy:#4caf50; --copy-hover:#3e8e41;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: var(--text);
+      min-height: 100vh; display:flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .container {
+      width: 100%; max-width: 560px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+      backdrop-filter: blur(10px);
+      padding: 26px;
+      opacity: 0; transform: translateY(16px);
+      animation: fadeIn .6s ease forwards;
+    }
+    @keyframes fadeIn { to { opacity:1; transform: translateY(0); } }
+    h1 { margin: 0 0 12px; font-size: 1.8rem; text-align: center; }
+    p.sub { margin: 0 0 18px; opacity: .9; text-align:center; }
+
+    form { display:flex; gap:10px; flex-wrap: wrap; }
+    input[type="url"]{
+      flex:1 1 320px; padding: 12px 14px; border:0; border-radius: 10px;
+      font-size: 1rem; outline: none;
+    }
+    button.primary{
+      flex: 1 1 140px; min-width: 140px;
+      background: var(--btn); color:#fff; border:0; border-radius: 10px;
+      padding: 12px 16px; font-size: 1rem; cursor:pointer; transition: .25s;
+    }
+    button.primary:hover{ background: var(--btn-hover); transform: translateY(-1px); }
+
+    .result { margin-top: 14px; }
+    .pill {
+      display:flex; align-items:center; justify-content: space-between; gap:10px;
+      background: var(--pill-bg); border-radius: 999px; padding: 10px 12px;
+    }
+    .pill a {
+      color: #fff; text-decoration: none; font-weight: 600; word-break: break-all;
+      flex: 1;
+    }
+    .copy-btn {
+      background: var(--copy); color:#fff; border:0; border-radius: 999px;
+      padding: 8px 14px; cursor:pointer; transition:.2s; white-space: nowrap;
+    }
+    .copy-btn:hover { background: var(--copy-hover); }
+
+    .history { margin-top: 18px; display:none; }
+    .history h2 { font-size: 1.05rem; margin: 0 0 8px; }
+    .list { display:grid; gap:8px; }
+    .item {
+      background: rgba(255,255,255,0.14);
+      border-radius: 10px; padding: 10px 12px; font-size:.95rem;
+      display:flex; gap:8px; align-items:center; overflow:hidden;
+    }
+    .item a { color:#fff; text-decoration:none; font-weight:600; }
+    .item .long { opacity:.95; overflow:hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .toast {
+      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,.7); color:#fff; padding:10px 14px; border-radius: 999px;
+      font-size: .95rem; display:none;
+    }
+    @media (max-width: 480px){
+      h1 { font-size: 1.5rem; }
+      button.primary { flex:1 1 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔗 URL Shortener</h1>
+    <p class="sub">Turn long links into neat, shareable ones.</p>
+
+    <form id="urlForm">
+      <input type="url" id="longUrl" placeholder="Paste a long URL (e.g., https://example.com/very/long...)" required autofocus>
+      <button class="primary" type="submit">Shorten URL</button>
+    </form>
+
+    <div class="result" id="result" style="display:none;">
+      <div class="pill">
+        <a id="shortUrl" href="#" target="_blank" rel="noopener"></a>
+        <button class="copy-btn" id="copyBtn" type="button">Copy</button>
+      </div>
+    </div>
+
+    <div class="history" id="history">
+      <h2>Recent</h2>
+      <div class="list" id="historyList"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Copied!</div>
+
+  <script>
+    const form = document.getElementById("urlForm");
+    const longUrlInput = document.getElementById("longUrl");
+    const result = document.getElementById("result");
+    const shortUrlA = document.getElementById("shortUrl");
+    const copyBtn = document.getElementById("copyBtn");
+    const historyWrap = document.getElementById("history");
+    const historyList = document.getElementById("historyList");
+    const toast = document.getElementById("toast");
+
+    function showToast(text){
+      toast.textContent = text || "Copied!";
+      toast.style.display = "block";
+      setTimeout(()=> toast.style.display = "none", 1200);
+    }
+
+    function addToHistory(longUrl, shortUrl){
+      historyWrap.style.display = "block";
+      const item = document.createElement("div");
+      item.className = "item";
+      const shortA = document.createElement("a");
+      shortA.href = shortUrl; shortA.target = "_blank"; shortA.rel = "noopener";
+      shortA.textContent = shortUrl;
+      const sep = document.createElement("span");
+      sep.textContent = " → ";
+      const longSpan = document.createElement("span");
+      longSpan.className = "long";
+      longSpan.title = longUrl;
+      longSpan.textContent = longUrl;
+      item.appendChild(shortA);
+      item.appendChild(sep);
+      item.appendChild(longSpan);
+      historyList.prepend(item);
+    }
+
+    copyBtn.addEventListener("click", async ()=>{
+      const url = shortUrlA.href;
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast("Copied!");
+      } catch {
+        showToast("Copy failed");
+      }
+    });
+
+    form.addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const longUrl = longUrlInput.value.trim();
+      if(!longUrl) return;
+
+      try {
+        const res = await fetch("/shorten", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ long_url: longUrl })
+        });
+
+        const data = await res.json();
+        if(!res.ok){
+          showToast(data.error || "Error");
+          return;
+        }
+
+        shortUrlA.href = data.short_url;
+        shortUrlA.textContent = data.short_url;
+        result.style.display = "block";
+        addToHistory(longUrl, data.short_url);
+        longUrlInput.value = "";
+        longUrlInput.focus();
+      } catch(err){
+        showToast("Network error");
+      }
+    });
+  </script>
+</body>
+</html>
